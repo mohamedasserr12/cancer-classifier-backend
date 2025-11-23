@@ -5,23 +5,23 @@ import numpy as np
 from PIL import Image
 import os
 
+# Print TensorFlow version (SAFE)
 print(f"TensorFlow version: {tf.__version__}")
-print(f"Keras version: {tf.keras.__version__}")
+# ❌ Removed keras.__version__ because it does NOT exist in TF 2.15
+
 
 # --- Main model ---
 main_model_path = "main_cancer_model.keras"
 print(f"Loading main model from: {main_model_path}")
 
 try:
-    # Try loading with TF 2.12/Keras 2.12
     main_model = keras.models.load_model(main_model_path, compile=False)
     print("Main model loaded successfully.\n")
 except Exception as e:
     print(f"Error loading model with Keras 2: {e}")
     print("Attempting alternative loading method...")
-    # Fallback: Try with custom objects
     main_model = keras.models.load_model(
-        main_model_path, 
+        main_model_path,
         compile=False,
         custom_objects=None,
         safe_mode=False
@@ -67,17 +67,14 @@ subclasses = {
 loaded_submodels = {}
 
 def preprocess_image(img):
-    """Preprocess image for EfficientNet"""
-    img = img.convert('RGB')  # Ensure RGB format
+    img = img.convert('RGB')
     img = img.resize((224, 224))
     img_array = np.array(img, dtype=np.float32)
-    # EfficientNet preprocessing
     img_array = tf.keras.applications.efficientnet.preprocess_input(img_array)
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
 def load_submodel(cancer_type):
-    """Load submodel for specific cancer type"""
     if cancer_type not in loaded_submodels:
         submodel_name = f"{cancer_type.lower().replace(' ', '_')}_model.keras"
         if os.path.exists(submodel_name):
@@ -89,7 +86,6 @@ def load_submodel(cancer_type):
     return loaded_submodels[cancer_type]
 
 def predict_image(img):
-    """Main prediction function"""
     try:
         img_array = preprocess_image(img)
 
@@ -130,7 +126,6 @@ def predict_image(img):
         }
 
 def predict_gradio(img):
-    """Gradio wrapper function"""
     if img is None:
         return "No image uploaded", "N/A", 0.0, 0.0
     
@@ -152,8 +147,10 @@ demo = gr.Interface(
         gr.Number(label="Subclass Confidence Score")
     ],
     title="🏥 Multi-Cancer Classification System",
-    description="Upload a medical image to classify the cancer type and subclass. Supports 14 cancer types with detailed subclassification.",
-    examples=None,  # Add example images here if needed
+    description=(
+        "Upload a medical image to classify the cancer type and subclass. "
+        "Supports 14 cancer types with detailed subclassification."
+    ),
     allow_flagging="never"
 )
 
