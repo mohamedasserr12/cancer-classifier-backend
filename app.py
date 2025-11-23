@@ -6,7 +6,7 @@ from PIL import Image
 import os
 
 print(f"TensorFlow version: {tf.__version__}")
-print(f"Keras version: {keras.__version__}")
+print(f"Keras version: {tf.keras.__version__}")
 
 # --- Main model ---
 main_model_path = "main_cancer_model.keras"
